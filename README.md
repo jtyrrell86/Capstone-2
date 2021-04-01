@@ -34,6 +34,16 @@ The weather train csv contained a years worth of hour by hour air temperatives, 
 
 ## EDA
 ## Modeling Using Random Forest
+<div align="center">
+        <img src="images/Modeling_scores" width="" height="">
+    </div>
+<br>
+
+<div align="center">
+        <img src="images/feature_importance_plot.png" width="" height="">
+    </div>
+<br>
+
 ## Conclusions
 ## Goals for Capstone 3
 * 
