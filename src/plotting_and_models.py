@@ -77,17 +77,6 @@ def feature_significance_plot(feature_names, feature_importances):
     plt.tight_layout()
     plt.savefig("../images/feature_importance_plot")
 
-def some_plot():
-    '''
-    Plots:
-    Be sure to add a visual of my data to the readme
-    1) mean usage vs. time of day
-    2) pie chart of the usage type
-    3) usage of the 3-4 different meter types on one graph
-    4) significance plots
-    5) ?
-    '''
-
 if __name__ == "__main__":
     # cleaned_df = pd.read_csv("../data/cleaned_df.csv")
     # cleaned_df.drop("Unnamed: 0", axis=1, inplace=True)
