@@ -63,7 +63,7 @@ When viewing air_temperature in the weather csv by itself it only appeared 55 va
 <br>
 
 ## EDA
-Due to significant amount of time it took to get my data into a form I could put into a model I choose to skip EDA and start modeling.
+Due to significant amount of time it took to get my data into a form I could put into a model I choose to skip additional EDA and start modeling.
 
 ## Modeling Using Random Forest
 My initial goal with this project was to be able to get one working model, preferably with my entire data set. I did initially try that, but after leaving my model running overnight again I woke up to an error message that the process had been killed.
@@ -90,7 +90,7 @@ From that final model the below graph is of the feature importance’s of the to
 <br>
 
 ## Conclusions
-To answer the question as to whether it's possible to predict energy usage, it is.
+From my inital modeling it appears I should be able to predict savings, but I won't have a better idea of it's predictive capabilities until I am able to rund the model on a full dataset.
 
 
 ## Ideas for Capstone 3
