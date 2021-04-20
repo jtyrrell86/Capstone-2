@@ -111,6 +111,10 @@ def create_ref_col_and_drop_remaining_unused(df):
     df["row_id"] = df.index
     return df
 
+import time
+start = time.time()
+end = time.time()
+print(end - start)
 
 if __name__ == "__main__":
     # Import data

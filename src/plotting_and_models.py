@@ -13,6 +13,10 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import confusion_matrix, precision_score, recall_score
 import math
 
+# Stick to 80 col or less
+# pycode linter- look at slack
+# write full docstrings
+
 def mulitmodels(model, df):
     '''
     Allows the user to pass in any model type, as well as the data, and recieve an r^2 score, y_predictions,
