@@ -96,7 +96,8 @@ def mulitmodels(model, df):
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=100)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
-    return model.score(X_test, y_test), y_pred, y_test, model.feature_importances_
+    return model.score(X_test, y_test), y_pred, y_test, \
+        model.feature_importances_
 
 
 def mulitmodels_for_kaggle(model, df, X_test):
@@ -189,9 +190,8 @@ def target_transformation(df):
         Dataframe with the target column, meter reading, log transformed
     '''
 
-    df["meter_reading"].loc[df["meter_reading"] >= 0] = \
-    df.loc[df["meter_reading"] >= 0, "meter_reading"].\
-    apply(lambda x: np.log(x+1))
+    df["meter_reading"].loc[df["meter_reading"] >= 0] = df.loc[df[
+        "meter_reading"] >= 0, "meter_reading"].apply(lambda x: np.log(x+1))
     return df
 
 
@@ -252,16 +252,22 @@ if __name__ == "__main__":
     # cleaned_df.drop("Unnamed: 0", axis=1, inplace=True)
 
     # Data for EDA plotting
-    # metadata_df = pd.read_csv("../data/ashrae-energy-prediction/building_metadata.csv")
+    # metadata_df = pd.read_csv("../data/
+    #   ashrae-energy-prediction/building_metadata.csv")
     plt.style.use("ggplot")
-    # labels = ["Education", "Office", "Entertainment/ \n public assembly", "Public services", "Lodging/ \n residential", "Other"]
+    # labels = ["Education", "Office", "Entertainment/ \n public assembly",
+    #   "Public services", "Lodging/ \n residential", "Other"]
     # primary_use_bar_graph(metadata_df, labels)
 
     # Cleaned training data for each meter type
-    hotwater_subset = pd.read_csv("../data/hotwater_subset.csv", index_col="Unnamed: 0")
-    electricity_subset = pd.read_csv("../data/electricity_subset.csv", index_col="Unnamed: 0")
-    chilledwater_subset = pd.read_csv("../data/chilledwater_subset.csv", index_col="Unnamed: 0")
-    steam_subset = pd.read_csv("../data/steam_subset.csv", index_col="Unnamed: 0")
+    hotwater_subset = pd.read_csv("../data/hotwater_subset.csv",
+        index_col="Unnamed: 0")
+    electricity_subset = pd.read_csv("../data/electricity_subset.csv",
+        index_col="Unnamed: 0")
+    chilledwater_subset = pd.read_csv("../data/chilledwater_subset.csv",
+        index_col="Unnamed: 0")
+    steam_subset = pd.read_csv("../data/steam_subset.csv",
+        index_col="Unnamed: 0")
 
     # Delete this for main branch.
     '''non_transformed_hotwater_drop_list = ["Unnamed: 0", "row_id", "Unnamed: 0" \
@@ -281,73 +287,72 @@ if __name__ == "__main__":
         , non_transformed_hotwater_df))'''
 
     # Hotwater data to model
-    hotwater_drop_list = ["Unnamed: 0.1", "row_id", "electricity","chilledwater" \
-    , "steam", "hotwater" ,"Manufacturing/industrial","Other", "Parking" \
-    , "Retail", "Services", "Utility", "Warehouse/storage"]
-    hotwater_df = drop_unimportant_columns(hotwater_subset \
-        , hotwater_drop_list)
+    hotwater_drop_list = ["Unnamed: 0.1", "row_id", "electricity",
+        "chilledwater", "steam", "hotwater", "Manufacturing/industrial",
+        "Other", "Parking", "Retail", "Services", "Utility",
+        "Warehouse/storage"]
+    hotwater_df = drop_unimportant_columns(hotwater_subset,
+        hotwater_drop_list)
     hotwater_df = target_transformation(hotwater_df)
 
     # Modeling hotwater data
-    hotwater_rf = RandomForestRegressor(n_estimators=100 \
-        , n_jobs=-1)
+    hotwater_rf = RandomForestRegressor(n_estimators=100,
+        n_jobs=-1)
     hotwater_score, hotwater_y_pred, hotwater_y_test, \
         hotwater_feature_importances = mulitmodels(hotwater_rf, hotwater_df)
     hotwater_rmse_score = rmse(hotwater_y_pred, hotwater_y_test)
 
-    print(feature_importance_bar_graph( "Hotwater", hotwater_feature_importances \
-        , hotwater_df))
+    print(feature_importance_bar_graph("Hotwater",
+        hotwater_feature_importances, hotwater_df))
     print(f"Hotwater RMSE: {hotwater_rmse_score}")
 
     # electricity data to model
     electricity_drop_list = ["Unnamed: 0.1", "row_id"]
-    electricity_df = drop_unimportant_columns(electricity_subset \
-        , electricity_drop_list)
+    electricity_df = drop_unimportant_columns(electricity_subset,
+        electricity_drop_list)
     electricity_df = target_transformation(electricity_df)
 
     # Modeling electricity data
-    electricity_rf = RandomForestRegressor(n_estimators=100 \
-        , n_jobs=-1)
+    electricity_rf = RandomForestRegressor(n_estimators=100, n_jobs=-1)
     electricity_score, electricity_y_pred, electricity_y_test, \
-        electricity_feature_importances = mulitmodels(electricity_rf, electricity_df)
+        electricity_feature_importances \
+        = mulitmodels(electricity_rf, electricity_df)
     electricity_rmse_score = rmse(electricity_y_pred, electricity_y_test)
 
-    print(feature_importance_bar_graph( "Electricity", electricity_feature_importances \
-        , electricity_df))
+    print(feature_importance_bar_graph("Electricity",
+        electricity_feature_importances, electricity_df))
     print(f"Electricity RMSE: {electricity_rmse_score}")
 
     # chilledwater data to model
     chilledwater_drop_list = ["Unnamed: 0.1", "row_id"]
-    chilledwater_df = drop_unimportant_columns(chilledwater_subset \
-        , chilledwater_drop_list)
+    chilledwater_df = drop_unimportant_columns(chilledwater_subset,
+        chilledwater_drop_list)
     chilledwater_df = target_transformation(chilledwater_df)
 
     # Modeling chilledwater data
-    chilledwater_rf = RandomForestRegressor(n_estimators=100 \
-        , n_jobs=-1)
+    chilledwater_rf = RandomForestRegressor(n_estimators=100, n_jobs=-1)
     chilledwater_score, chilledwater_y_pred, chilledwater_y_test, \
-        chilledwater_feature_importances = mulitmodels(chilledwater_rf, chilledwater_df)
+        chilledwater_feature_importances \
+        = mulitmodels(chilledwater_rf, chilledwater_df)
     chilledwater_rmse_score = rmse(chilledwater_y_pred, chilledwater_y_test)
 
-    print(feature_importance_bar_graph( "Chilledwater", chilledwater_feature_importances \
-        , chilledwater_df))
+    print(feature_importance_bar_graph("Chilledwater",
+        chilledwater_feature_importances, chilledwater_df))
     print(f"Chilledwater RMSE: {chilledwater_rmse_score}")
 
     # steam data to model
     steam_drop_list = ["Unnamed: 0.1", "row_id"]
-    steam_df = drop_unimportant_columns(steam_subset \
-        , steam_drop_list)
+    steam_df = drop_unimportant_columns(steam_subset, steam_drop_list)
     steam_df = target_transformation(steam_df)
 
     # Modeling steam data
-    steam_rf = RandomForestRegressor(n_estimators=100 \
-        , n_jobs=-1)
+    steam_rf = RandomForestRegressor(n_estimators=100, n_jobs=-1)
     steam_score, steam_y_pred, steam_y_test, \
         steam_feature_importances = mulitmodels(steam_rf, steam_df)
     steam_rmse_score = rmse(steam_y_pred, steam_y_test)
 
-    print(feature_importance_bar_graph( "Steam", steam_feature_importances \
-        , steam_df))
+    print(feature_importance_bar_graph("Steam", steam_feature_importances,
+        steam_df))
     print(f"Steam RMSE: {steam_rmse_score}")
 
     ########################## In development #############################
