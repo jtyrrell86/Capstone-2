@@ -50,19 +50,19 @@ def create_quarterly_dummies_for_year(df):
     Next it creates four masks associated with quarters of the year and labels
     these q1, q2, q3, and q4. It then applies these masks to the values in the
     date column converting their values to either q1, q2, q3, or q4. Lastly,
-    it using one-hot encoding to convert catagorical date column into four
-    numeric dummie columns and drops the date column
+    it using one-hot encoding to convert categorical date column into four
+    numeric dummy columns and drops the date column
 
     Parameters
     ----------
     df : Pandas dataframe
-        Dataframe needing dates from the datetime column converted to dummie
+        Dataframe needing dates from the datetime column converted to dummy
         columns
 
     Returns
     -------
     Pandas dataframe
-        Dataframe with four numeric dummie columns for the quarters of a year
+        Dataframe with four numeric dummy columns for the quarters of a year
         added
     '''
     df["timestamp"] = pd.to_datetime(df["timestamp"])
@@ -91,19 +91,19 @@ def create_quarterly_dummies_for_a_day(df):
     these early morning, morning, afternoon, and evening. It then applies these
     masks to the values in the time column converting their values to either
     early morning, morning, afternoon, and evening. Lastly, it using one-hot
-    encoding to convert catagorical time column into four numeric dummie columns
+    encoding to convert categorical time column into four numeric dummy columns
     and drops the time column
 
     Parameters
     ----------
     df : Pandas dataframe
-        Dataframe needing times from the datetime column converted to dummie
+        Dataframe needing times from the datetime column converted to dummy
         columns
 
     Returns
     -------
     Pandas dataframe
-        Dataframe with four numeric dummie columns for the quarters of a day
+        Dataframe with four numeric dummy columns for the quarters of a day
         added
     '''
 
@@ -127,13 +127,13 @@ def create_quarterly_dummies_for_a_day(df):
 
 
 def create_primary_usage_and_meter_dummies(df):
-    '''Creates dummie coluumns for the primary usage and meter columns and then
+    '''Creates dummy columns for the primary usage and meter columns and then
     deletes those original two columns
 
     Parameters
     ----------
     df : Pandas dataframe
-        Input dataframe needing columns converted to dummie columns
+        Input dataframe needing columns converted to dummy columns
 
     Returns
     -------
@@ -155,28 +155,27 @@ def create_primary_usage_and_meter_dummies(df):
 
 def convert_site_one_meter_readings(df, to_kWh=True):
     '''Meter readings for building in site 0 were provided in different units
-    then the rest of the sites. This function allows you to switch between kbtu,
+    then the rest of the sites. This function allows you to switch between Kbtu,
     which is how they were reported and how you'll need to submit them to Kaggle,
-    and kwh, which you'll need to use for modeling
+    and kWh, which you'll need to use for modeling
 
     Parameters
     ----------
     df : pandas dataframe
         Datframe that needs it's meter reading units for site 0 converted.
     to_kWh : bool, optional
-        By default True. If left as such will convert from kbtu to kWh. Else it
-        will convert from kWh to kbtu
+        By default True. If left as such will convert from Kbtu to kWh. Else it
+        will convert from kWh to Kbtu
 
     Returns
     -------
     Pandas dataframe
         Dataframe with values in the meter reading column for site 0 converted
-        to eithe kWh or kbtu
+        to either kWh or Kbtu
     '''
     if to_kWh:
         df["meter_reading"].loc[df["site_id"] == 0] = df.loc[df["site_id"] == 0, \
-                                                            "meter_reading"].apply
-                                                            (lambda x: x*0.2931)
+        "meter_reading"].apply(lambda x: x*0.2931)
     else:
         df["meter_reading"].loc[df["site_id"] == 0] = df.loc[df["site_id"] == 0, \
         "meter_reading"].apply(lambda x: x*3.4118)
@@ -186,7 +185,7 @@ def convert_site_one_meter_readings(df, to_kWh=True):
 def create_temp_mean_df(weather_df):
     '''This function uses the original weather dataframe to build a lookup table
     with the mean temperature for each day for a year and 16 different sites.
-    The lookup table has a multiindex which stores both the site id and date.
+    The lookup table has a multi-index which stores both the site id and date.
 
     Parameters
     ----------
@@ -196,16 +195,17 @@ def create_temp_mean_df(weather_df):
     Returns
     -------
     Pandas dataframe
-        Dataframe with with mean temperatures
+        Dataframe with mean temperatures
     '''
     weather_df_copy = weather_df.copy()
-    weather_df_copy["timestamp"]= pd.to_datetime(weather_train_df["timestamp"])
+    weather_df_copy["timestamp"] = pd.to_datetime(weather_train_df["timestamp"])
     weather_df_copy["date"] = weather_df_copy["timestamp"].dt.date
     weather_df_copy.drop(["cloud_coverage", "dew_temperature", \
     "precip_depth_1_hr", "sea_level_pressure", "wind_direction", "wind_speed", \
     "timestamp"], axis=1, inplace=True)
     temp_mean_df = weather_df_copy.groupby(by=["site_id", "date"]).mean()
     return temp_mean_df
+
 
 def impute_temp_nans(df, temp_mean_df):
     ''' This function iterates through the input dataframes air temperature
@@ -225,22 +225,22 @@ def impute_temp_nans(df, temp_mean_df):
     Pandas dataframe
         Dataframe with air temperature nan's imputed
     '''
-    
     start = time.time()
     for idx, temp in enumerate(df["air_temperature"]):
         if pd.isna(temp):
             year = df.iloc[idx, 3].year
             month = df.iloc[idx, 3].month
             day = df.iloc[idx, 3].day
-            df.iloc[idx, 5] = temp_mean_df.loc[(df.iloc[idx, 0] , datetime.date \
-                              (year, month, day))]["air_temperature"]
+            df.iloc[idx, 5] = temp_mean_df.loc[(df.iloc[idx, 0], datetime.date \
+                                (year, month, day))]["air_temperature"]
         if idx % 100000 == 0:
             checkpoint = time.time()
             print(f'{idx} 100,000 time:{checkpoint-start}')
     return df
 
+
 def create_ref_col_and_drop_remaining_unused(df, list_of_cols_to_drop_2):
-    '''This function drops a list of any remaining columns not needed for 
+    '''This function drops a list of any remaining columns not needed for
     modeling. I also adds a reference column used for tracking
 
     Parameters
@@ -262,20 +262,22 @@ def create_ref_col_and_drop_remaining_unused(df, list_of_cols_to_drop_2):
 
     return df
 
+
 def meter_type_subset(df, meter_type):
     return df[df[meter_type] == 1]
-    
+
+
 if __name__ == "__main__":
     metadata_df = pd.read_csv(
         "../data/ashrae-energy-prediction/building_metadata.csv")
     weather_train_df = pd.read_csv(
         "../data/ashrae-energy-prediction/weather_train.csv")
     train_df = pd.read_csv("../data/ashrae-energy-prediction/train.csv")
-    
+
     weather_test_df = pd.read_csv(
         "../data/ashrae-energy-prediction/weather_test.csv")
     test_df = pd.read_csv("../data/ashrae-energy-prediction/test.csv")
-    
+
     # Cleaning the training data
     '''combined_df = merge_dataframes(metadata_df, train_df, weather_train_df)
     lst_of_cols_to_drop_1 = ["cloud_coverage", "dew_temperature", \
@@ -303,14 +305,14 @@ if __name__ == "__main__":
 
     steam_subset = meter_type_subset(cleaned_df, "steam")
     steam_subset.to_csv("../data/steam_subset.csv")
-    
+
     hotwater_subset = meter_type_subset(cleaned_df, "hotwater")
     hotwater_subset.to_csv("../data/hotwater_subset.csv")'''
 
     # Cleaning the test data
     combined_test_df = merge_dataframes(metadata_df, test_df, weather_test_df)
     lst_of_cols_to_drop_1 = ["cloud_coverage", "dew_temperature", \
-        "precip_depth_1_hr" , "sea_level_pressure", "wind_direction", "wind_speed",\
+        "precip_depth_1_hr", "sea_level_pressure", "wind_direction", "wind_speed",\
         "year_built", "floor_count"]
     combined_test_df = drop_initial_unused_cols(combined_test_df, \
         lst_of_cols_to_drop_1)
@@ -333,20 +335,8 @@ if __name__ == "__main__":
 
     steam_test_subset = meter_type_subset(cleaned_test_df, "steam")
     steam_test_subset.to_csv("../data/steam_test_subset.csv")
-    
+
     hotwater_test_subset = meter_type_subset(cleaned_test_df, "hotwater")
     hotwater_test_subset.to_csv("../data/hotwater_test_subset.csv")
 
     ############## CODE TESTING- DELETE ONCE PUSHED TO MAIN BRANCH#########
-    
-
-    
-
-
-
-
-    
-
-    
-
-
