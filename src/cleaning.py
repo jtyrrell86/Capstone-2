@@ -143,8 +143,8 @@ def create_primary_usage_and_meter_dummies(df):
     '''
     meter_dummies = pd.get_dummies(df["meter"])
     df = df.join(other=meter_dummies)
-    df = df.rename(
-        columns={0: "electricity", 1: "chilledwater", 2: "steam", 3: "hotwater"})
+    df = df.rename(columns={0: "electricity", 1: "chilledwater", 2: "steam",
+        3: "hotwater"})
     df.drop(["meter"], axis=1, inplace=True)
 
     usage_dummies = pd.get_dummies(df["primary_use"])
@@ -155,9 +155,9 @@ def create_primary_usage_and_meter_dummies(df):
 
 def convert_site_one_meter_readings(df, to_kWh=True):
     '''Meter readings for building in site 0 were provided in different units
-    then the rest of the sites. This function allows you to switch between Kbtu,
-    which is how they were reported and how you'll need to submit them to Kaggle,
-    and kWh, which you'll need to use for modeling
+    then the rest of the sites. This function allows you to switch between
+    Kbtu, which is how they were reported and how you'll need to submit them
+    to Kaggle, and kWh, which you'll need to use for modeling
 
     Parameters
     ----------
@@ -174,11 +174,11 @@ def convert_site_one_meter_readings(df, to_kWh=True):
         to either kWh or Kbtu
     '''
     if to_kWh:
-        df["meter_reading"].loc[df["site_id"] == 0] = df.loc[df["site_id"] == 0, \
-        "meter_reading"].apply(lambda x: x*0.2931)
+        df["meter_reading"].loc[df["site_id"] == 0] = df.loc[df["site_id"]
+            == 0, "meter_reading"].apply(lambda x: x*0.2931)
     else:
-        df["meter_reading"].loc[df["site_id"] == 0] = df.loc[df["site_id"] == 0, \
-        "meter_reading"].apply(lambda x: x*3.4118)
+        df["meter_reading"].loc[df["site_id"] == 0] = df.loc[df["site_id"]
+            == 0, "meter_reading"].apply(lambda x: x*3.4118)
     return df
 
 
@@ -198,11 +198,12 @@ def create_temp_mean_df(weather_df):
         Dataframe with mean temperatures
     '''
     weather_df_copy = weather_df.copy()
-    weather_df_copy["timestamp"] = pd.to_datetime(weather_train_df["timestamp"])
+    weather_df_copy["timestamp"] = pd.to_datetime(weather_train_df
+        ["timestamp"])
     weather_df_copy["date"] = weather_df_copy["timestamp"].dt.date
-    weather_df_copy.drop(["cloud_coverage", "dew_temperature", \
-    "precip_depth_1_hr", "sea_level_pressure", "wind_direction", "wind_speed", \
-    "timestamp"], axis=1, inplace=True)
+    weather_df_copy.drop(["cloud_coverage", "dew_temperature",
+        "precip_depth_1_hr", "sea_level_pressure", "wind_direction",
+        "wind_speed", "timestamp"], axis=1, inplace=True)
     temp_mean_df = weather_df_copy.groupby(by=["site_id", "date"]).mean()
     return temp_mean_df
 
@@ -231,8 +232,8 @@ def impute_temp_nans(df, temp_mean_df):
             year = df.iloc[idx, 3].year
             month = df.iloc[idx, 3].month
             day = df.iloc[idx, 3].day
-            df.iloc[idx, 5] = temp_mean_df.loc[(df.iloc[idx, 0], datetime.date \
-                                (year, month, day))]["air_temperature"]
+            df.iloc[idx, 5] = temp_mean_df.loc[(df.iloc[idx, 0], datetime.date
+                (year, month, day))]["air_temperature"]
         if idx % 100000 == 0:
             checkpoint = time.time()
             print(f'{idx} 100,000 time:{checkpoint-start}')
@@ -280,18 +281,19 @@ if __name__ == "__main__":
 
     # Cleaning the training data
     combined_df = merge_dataframes(metadata_df, train_df, weather_train_df)
-    lst_of_cols_to_drop_1 = ["cloud_coverage", "dew_temperature", \
-        "precip_depth_1_hr" , "sea_level_pressure", "wind_direction", "wind_speed",\
-        "year_built", "floor_count"]
+    lst_of_cols_to_drop_1 = ["cloud_coverage", "dew_temperature",
+        "precip_depth_1_hr" , "sea_level_pressure", "wind_direction",
+        "wind_speed", "year_built", "floor_count"]
     combined_df = drop_initial_unused_cols(combined_df, lst_of_cols_to_drop_1)
     combined_df = create_quarterly_dummies_for_year(combined_df)
     combined_df = create_quarterly_dummies_for_a_day(combined_df)
     combined_df = create_primary_usage_and_meter_dummies(combined_df)
     combined_df = convert_site_one_meter_readings(combined_df, to_kWh=True)
-    temp_mean_df = create_temp_mean_df(weather_train_df)
-    combined_df = impute_temp_nans(combined_df, temp_mean_df)
+
+    # temp_mean_df = create_temp_mean_df(weather_train_df)
+    # combined_df = impute_temp_nans(combined_df, temp_mean_df)
     list_of_cols_to_drop_2 = ["timestamp", "site_id", "building_id"]
-    cleaned_df = create_ref_col_and_drop_remaining_unused(combined_df, \
+    cleaned_df = create_ref_col_and_drop_remaining_unused(combined_df,
         list_of_cols_to_drop_2)
     cleaned_df.to_csv("../data/cleaned_df.csv")
 
@@ -309,31 +311,41 @@ if __name__ == "__main__":
     hotwater_subset.to_csv("../data/hotwater_subset.csv")
 
     # Cleaning the test data
-    combined_test_df = merge_dataframes(metadata_df, test_df, weather_test_df)
-    lst_of_cols_to_drop_1 = ["cloud_coverage", "dew_temperature", \
-        "precip_depth_1_hr", "sea_level_pressure", "wind_direction", "wind_speed",\
-        "year_built", "floor_count"]
-    combined_test_df = drop_initial_unused_cols(combined_test_df, \
+    '''combined_test_df = merge_dataframes(metadata_df, test_df,
+        weather_test_df)
+    lst_of_cols_to_drop_1 = ["cloud_coverage", "dew_temperature",
+        "precip_depth_1_hr", "sea_level_pressure", "wind_direction",
+        "wind_speed", "year_built", "floor_count"]
+    combined_test_df = drop_initial_unused_cols(combined_test_df,
         lst_of_cols_to_drop_1)
     combined_test_df = create_quarterly_dummies_for_year(combined_test_df)
     combined_test_df = create_quarterly_dummies_for_a_day(combined_test_df)
     combined_test_df = create_primary_usage_and_meter_dummies(combined_test_df)
+
     temp_mean_test_df = create_temp_mean_df(weather_test_df)
     combined_test_df = impute_temp_nans(combined_test_df, temp_mean_test_df)
     list_of_cols_to_drop_2 = ["timestamp", "site_id", "building_id"]
-    cleaned_test_df = create_ref_col_and_drop_remaining_unused(combined_test_df, \
-        list_of_cols_to_drop_2)
+    cleaned_test_df = create_ref_col_and_drop_remaining_unused(
+        combined_test_df, list_of_cols_to_drop_2)
     cleaned_test_df.to_csv("../data/cleaned_test_df.csv")
 
     # Splitting the test data into meter type for individual modeling
     electricity_test_subset = meter_type_subset(cleaned_test_df, "electricity")
     electricity_test_subset.to_csv("../data/electricity_test_subset.csv")
 
-    chilledwater_test_subset = meter_type_subset(cleaned_test_df, "chilledwater")
+    chilledwater_test_subset = meter_type_subset(cleaned_test_df,
+        "chilledwater")
     chilledwater_test_subset.to_csv("../data/chilledwater_test_subset.csv")
 
     steam_test_subset = meter_type_subset(cleaned_test_df, "steam")
     steam_test_subset.to_csv("../data/steam_test_subset.csv")
 
     hotwater_test_subset = meter_type_subset(cleaned_test_df, "hotwater")
-    hotwater_test_subset.to_csv("../data/hotwater_test_subset.csv")
+    hotwater_test_subset.to_csv("../data/hotwater_test_subset.csv")'''
+
+    ############## CODE TESTING- DELETE ONCE PUSHED TO MAIN BRANCH#########
+    combined_df["date"] = combined_df["timestamp"].dt.date
+    combined_df.where(combined_df["air_temperature"].notnull(), combined_df.groupby(["site_id", "date"])["air_temperature"].mean().reset_index(), inplace=True, axis=1)
+
+    print(combined_df.head())
+    print(combined_df.info())
