@@ -290,8 +290,8 @@ if __name__ == "__main__":
     combined_df = create_primary_usage_and_meter_dummies(combined_df)
     combined_df = convert_site_one_meter_readings(combined_df, to_kWh=True)
 
-    # temp_mean_df = create_temp_mean_df(weather_train_df)
-    # combined_df = impute_temp_nans(combined_df, temp_mean_df)
+    temp_mean_df = create_temp_mean_df(weather_train_df)
+    combined_df = impute_temp_nans(combined_df, temp_mean_df)
     list_of_cols_to_drop_2 = ["timestamp", "site_id", "building_id"]
     cleaned_df = create_ref_col_and_drop_remaining_unused(combined_df,
         list_of_cols_to_drop_2)
@@ -311,7 +311,7 @@ if __name__ == "__main__":
     hotwater_subset.to_csv("../data/hotwater_subset.csv")
 
     # Cleaning the test data
-    '''combined_test_df = merge_dataframes(metadata_df, test_df,
+    combined_test_df = merge_dataframes(metadata_df, test_df,
         weather_test_df)
     lst_of_cols_to_drop_1 = ["cloud_coverage", "dew_temperature",
         "precip_depth_1_hr", "sea_level_pressure", "wind_direction",
@@ -341,11 +341,4 @@ if __name__ == "__main__":
     steam_test_subset.to_csv("../data/steam_test_subset.csv")
 
     hotwater_test_subset = meter_type_subset(cleaned_test_df, "hotwater")
-    hotwater_test_subset.to_csv("../data/hotwater_test_subset.csv")'''
-
-    ############## CODE TESTING- DELETE ONCE PUSHED TO MAIN BRANCH#########
-    combined_df["date"] = combined_df["timestamp"].dt.date
-    combined_df.where(combined_df["air_temperature"].notnull(), combined_df.groupby(["site_id", "date"])["air_temperature"].mean().reset_index(), inplace=True, axis=1)
-
-    print(combined_df.head())
-    print(combined_df.info())
+    hotwater_test_subset.to_csv("../data/hotwater_test_subset.csv")
