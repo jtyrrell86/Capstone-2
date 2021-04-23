@@ -9,11 +9,15 @@ RUN python3 --version
 RUN pip3 --version 
 
 # set the working directory for containers
-WORKDIR /Users/justintyrrell/Documents/Galvanize_DSI/Capstone-2
+WORKDIR /Users/justintyrrell/Documents/Galvanize_DSI/Capstone-2/docker/Modeling_and_plotting
 
 # Installing python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY src/ src
-COPY data/ data
+# Copy in needed files
+COPY ../../src/plotting_and_models.py src/
+COPY ../../data/chilledwater_subset.csv data/
+COPY ../../data/electricity_subset.csv data/
+COPY ../../data/steam_subset.csv data/
+#COPY ../../data/combined_df.csv

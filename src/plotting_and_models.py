@@ -1,15 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import datetime
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import confusion_matrix, precision_score, recall_score
 import math
 
 
@@ -248,16 +241,16 @@ def feature_importance_bar_graph(meter_type, feature_importances, df):
 
 if __name__ == "__main__":
     # Full cleaned training set
-    # cleaned_df = pd.read_csv("../data/cleaned_df.csv")
-    # cleaned_df.drop("Unnamed: 0", axis=1, inplace=True)
+    cleaned_df = pd.read_csv("../data/cleaned_df.csv")
+    cleaned_df.drop("Unnamed: 0", axis=1, inplace=True)
 
     # Data for EDA plotting
-    # metadata_df = pd.read_csv("../data/
-    #   ashrae-energy-prediction/building_metadata.csv")
+    metadata_df = pd.read_csv("../data/ \
+        ashrae-energy-prediction/building_metadata.csv")
     plt.style.use("ggplot")
-    # labels = ["Education", "Office", "Entertainment/ \n public assembly",
-    #   "Public services", "Lodging/ \n residential", "Other"]
-    # primary_use_bar_graph(metadata_df, labels)
+    labels = ["Education", "Office", "Entertainment/ \n public assembly",
+        "Public services", "Lodging/ \n residential", "Other"]
+    primary_use_bar_graph(metadata_df, labels)
 
     # Cleaned training data for each meter type
     hotwater_subset = pd.read_csv("../data/hotwater_subset.csv",
@@ -268,23 +261,6 @@ if __name__ == "__main__":
         index_col="Unnamed: 0")
     steam_subset = pd.read_csv("../data/steam_subset.csv",
         index_col="Unnamed: 0")
-
-    # Delete this for main branch.
-    '''non_transformed_hotwater_drop_list = ["Unnamed: 0", "row_id", "Unnamed: 0" \
-    , "row_id", "electricity","chilledwater", "steam", "hotwater" \
-    ,"Manufacturing/industrial","Other", "Parking", "Retail", "Services" \
-    , "Utility", "Warehouse/storage"]
-    non_transformed_hotwater_df = drop_unimportant_columns(hotwater_subset \
-        , non_transformed_hotwater_drop_list, axis=1)
-
-    non_transformed_hotwater_rf = RandomForestRegressor(n_estimators=100 \
-        , n_jobs=-1)
-    score_0, y_pred_0, y_test_0, feat_importances_0 = mulitmodels( \
-        non_transformed_hotwater_rf, non_transformed_hotwater_df)
-    rmsle_score_0 = rmsle(y_pred_0, y_test_0)
-
-    print(feature_importance_plot(feat_importances_0, "hotwater"\
-        , non_transformed_hotwater_df))'''
 
     # Hotwater data to model
     hotwater_drop_list = ["Unnamed: 0.1", "row_id", "electricity",
@@ -354,5 +330,3 @@ if __name__ == "__main__":
     print(feature_importance_bar_graph("Steam", steam_feature_importances,
         steam_df))
     print(f"Steam RMSE: {steam_rmse_score}")
-
-    ########################## In development #############################

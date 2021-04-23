@@ -90,10 +90,11 @@ From that final model the below graph is of the feature importance’s of the to
 <br>
 
 ## Conclusions
+Modeling the amount of data present in both my test () and train () dataset is difficult. 
 From my inital modeling it appears I should be able to predict savings, but I won't have a better idea of it's predictive capabilities until I am able to rund the model on a full dataset.
 
 
-## Ideas for Capstone 3
+## Future Direction
 * Utilize AWS for future cleaning and modeling
 * Look into tuning hyperparameters for this model and using other models
 * Create more plots to look at the relationships between the meter types and features to discover trends or more useful features 
@@ -101,4 +102,5 @@ From my inital modeling it appears I should be able to predict savings, but I wo
 * Separately model data from the other three meter types to compare which features are most significant to each meter type. Also, determine if it's best to have one model for all four types on one model for each type.
 * Run a model on the entire test data set and submit predictions to Kaggle for scoring
 
+## Sources
 
