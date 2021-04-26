@@ -63,6 +63,12 @@ When viewing air_temperature in the weather csv by itself it only appeared 55 va
 <br>
 
 ## EDA
+
+<div align="center">
+        <img src="images/primary_use_bar_graph.png" width="" height="">
+    </div>
+<br>
+
 Due to significant amount of time it took to get my data into a form I could put into a model I choose to skip additional EDA and start modeling.
 
 ## Modeling Using Random Forest
@@ -85,7 +91,7 @@ As one final step I ran my target column, meter_reading, through a logarithmic t
 From that final model the below graph is of the feature importance’s of the top 5 features.
 
 <div align="center">
-        <img src="images/feature_importance_plot.png" width="" height="">
+        <img src="images/Hotwater_feature_importance_bar_graph.png" width="" height="">
     </div>
 <br>
 

@@ -168,9 +168,10 @@ def rmse(y_pred, y_test):
     return math.sqrt(res / len(y_pred))
 
 
-def target_transformation(df):
-    '''Takes in a datframe that includes the target column, meter reading,
-    and log transforms the values
+def target_log_transformation(df):
+    '''Takes in a dataframe that includes the target column, meter reading,
+    and log transforms the values if the default log=True is left untouched.
+    If it's changed to false it will reverse the log transformation.
 
     Parameters
     ----------
@@ -182,10 +183,14 @@ def target_transformation(df):
     Pandas dataframe
         Dataframe with the target column, meter reading, log transformed
     '''
-
     df["meter_reading"].loc[df["meter_reading"] >= 0] = df.loc[df[
         "meter_reading"] >= 0, "meter_reading"].apply(lambda x: np.log(x+1))
     return df
+
+
+def reverse_log_transformation(sr):
+    sr[sr >= 0] = sr[sr >= 0].apply(lambda x: np.expm1(x))
+    return sr
 
 
 def feature_normalization(df):
@@ -226,12 +231,15 @@ def feature_importance_bar_graph(meter_type, feature_importances, df):
     '''
 
     sorted_feature_indices = np.argsort(feature_importances)[::-1]
-    feature_names = df.drop("meter_reading", axis=1).columns
+    feature_names = pd.Series(df.drop("meter_reading", axis=1).columns)
     top_5_feature_names = feature_names[sorted_feature_indices][:5]
+    for feature in top_5_feature_names:
+        top_5_feature_names.replace(feature, feature.replace("_", " "),
+            inplace=True)
     top_5_feature_importances = feature_importances[sorted_feature_indices][:5]
 
     fig, ax = plt.subplots(figsize=(8, 6), dpi=150)
-    ax.set_title(f"{meter_type} Feature Importances for Top 5")
+    ax.set_title(f"{meter_type} Feature Importances")
     ax.set_xlabel("Features")
     ax.set_ylabel("Importance")
     ax.bar(top_5_feature_names, top_5_feature_importances)
@@ -241,16 +249,16 @@ def feature_importance_bar_graph(meter_type, feature_importances, df):
 
 if __name__ == "__main__":
     # Full cleaned training set
-    cleaned_df = pd.read_csv("../data/cleaned_df.csv")
-    cleaned_df.drop("Unnamed: 0", axis=1, inplace=True)
+    # cleaned_df = pd.read_csv("../data/cleaned_df.csv")
+    # cleaned_df.drop("Unnamed: 0", axis=1, inplace=True)
 
     # Data for EDA plotting
-    metadata_df = pd.read_csv("../data/ \
-        ashrae-energy-prediction/building_metadata.csv")
+    # metadata_df = pd.read_csv("../data/ \
+    #     ashrae-energy-prediction/building_metadata.csv")
     plt.style.use("ggplot")
-    labels = ["Education", "Office", "Entertainment/ \n public assembly",
-        "Public services", "Lodging/ \n residential", "Other"]
-    primary_use_bar_graph(metadata_df, labels)
+    # labels = ["Education", "Office", "Entertainment/ \n public assembly",
+    #     "Public services", "Lodging/ \n residential", "Other"]
+    # primary_use_bar_graph(metadata_df, labels)
 
     # Cleaned training data for each meter type
     hotwater_subset = pd.read_csv("../data/hotwater_subset.csv",
@@ -269,7 +277,7 @@ if __name__ == "__main__":
         "Warehouse/storage"]
     hotwater_df = drop_unimportant_columns(hotwater_subset,
         hotwater_drop_list)
-    hotwater_df = target_transformation(hotwater_df)
+    hotwater_df = target_log_transformation(hotwater_df)
 
     # Modeling hotwater data
     hotwater_rf = RandomForestRegressor(n_estimators=100,
@@ -278,15 +286,15 @@ if __name__ == "__main__":
         hotwater_feature_importances = mulitmodels(hotwater_rf, hotwater_df)
     hotwater_rmse_score = rmse(hotwater_y_pred, hotwater_y_test)
 
-    print(feature_importance_bar_graph("Hotwater",
+    print(feature_importance_bar_graph("Hot Water",
         hotwater_feature_importances, hotwater_df))
-    print(f"Hotwater RMSE: {hotwater_rmse_score}")
+    # print(f"Hotwater RMSE: {round(hotwater_rmse_score, 3)}")
 
     # electricity data to model
     electricity_drop_list = ["Unnamed: 0.1", "row_id"]
     electricity_df = drop_unimportant_columns(electricity_subset,
         electricity_drop_list)
-    electricity_df = target_transformation(electricity_df)
+    electricity_df = target_log_transformation(electricity_df)
 
     # Modeling electricity data
     electricity_rf = RandomForestRegressor(n_estimators=100, n_jobs=-1)
@@ -297,13 +305,13 @@ if __name__ == "__main__":
 
     print(feature_importance_bar_graph("Electricity",
         electricity_feature_importances, electricity_df))
-    print(f"Electricity RMSE: {electricity_rmse_score}")
+    # print(f"Electricity RMSE: {round(electricity_rmse_score, 3)}")
 
     # chilledwater data to model
     chilledwater_drop_list = ["Unnamed: 0.1", "row_id"]
     chilledwater_df = drop_unimportant_columns(chilledwater_subset,
         chilledwater_drop_list)
-    chilledwater_df = target_transformation(chilledwater_df)
+    chilledwater_df = target_log_transformation(chilledwater_df)
 
     # Modeling chilledwater data
     chilledwater_rf = RandomForestRegressor(n_estimators=100, n_jobs=-1)
@@ -312,14 +320,14 @@ if __name__ == "__main__":
         = mulitmodels(chilledwater_rf, chilledwater_df)
     chilledwater_rmse_score = rmse(chilledwater_y_pred, chilledwater_y_test)
 
-    print(feature_importance_bar_graph("Chilledwater",
+    print(feature_importance_bar_graph("Chilled Water",
         chilledwater_feature_importances, chilledwater_df))
-    print(f"Chilledwater RMSE: {chilledwater_rmse_score}")
+    # print(f"Chilledwater RMSE: {round(chilledwater_rmse_score, 3)}")
 
     # steam data to model
     steam_drop_list = ["Unnamed: 0.1", "row_id"]
     steam_df = drop_unimportant_columns(steam_subset, steam_drop_list)
-    steam_df = target_transformation(steam_df)
+    steam_df = target_log_transformation(steam_df)
 
     # Modeling steam data
     steam_rf = RandomForestRegressor(n_estimators=100, n_jobs=-1)
@@ -329,4 +337,14 @@ if __name__ == "__main__":
 
     print(feature_importance_bar_graph("Steam", steam_feature_importances,
         steam_df))
-    print(f"Steam RMSE: {steam_rmse_score}")
+    # print(f"Steam RMSE: {round(steam_rmse_score, 3)}")
+
+    # Combining subset predictions
+    combined_y_pred = pd.Series(np.concatenate((hotwater_y_pred,
+        electricity_y_pred, chilledwater_y_pred, steam_y_pred), axis=0))
+    combined_y_test = pd.concat([hotwater_y_test, electricity_y_test,
+        chilledwater_y_test, steam_y_test], axis=0)
+    combined_y_pred = reverse_log_transformation(combined_y_pred)
+    combined_y_test = reverse_log_transformation(combined_y_test)
+    combined_rmsle = rmsle(combined_y_pred, combined_y_test)
+    print(f"Combined RMSLE: {round(combined_rmsle, 3)}")
