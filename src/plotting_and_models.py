@@ -28,12 +28,55 @@ def primary_use_bar_graph(metadata, labels):
     other = pd.Series([primary_use[5:].sum()], index=(["Other"]))
     primary_use = primary_use[:5].append(other)
 
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=150)
-    ax.set_title("Primary Uses")
-    ax.set_ylabel("# of Buildings")
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=200)
+    ax.set_title("Primary Uses", fontsize=18, color="black")
+    ax.set_ylabel("# of Buildings", fontsize=14, color="black")
+    ax.tick_params(axis='y', colors='black')
+    ax.tick_params(axis='x', colors='black')
     ax.bar(labels, primary_use.values)
     fig.tight_layout(pad=1)
     plt.savefig(f"../images/primary_use_bar_graph.png")
+
+
+def percentage_meter_readings_by_energy__type_plot(train_df):
+    '''Takes in the dataframe containing all meter readings, calculates the
+    percentage of meter readings by meter type, and plots that on a stacked
+    bar graph
+
+    Parameters
+    ----------
+    train_df : Dataframe
+        Dataframe containing all meter readings
+
+    Returns
+    -------
+    percentage_meter_readings_by_energy__type_plot : .png file
+    '''
+
+    percent_electricity = round((train_df[train_df["meter"] == 0]["meter"].
+        count() / train_df["meter"].count() * 100), 2)
+    percent_chilled_water = round((train_df[train_df["meter"] == 1]["meter"].
+        count() / train_df["meter"].count() * 100), 2)
+    percent_steam = round((train_df[train_df["meter"] == 2]["meter"].
+        count() / train_df["meter"].count() * 100), 2)
+    percent_hot_water = round((train_df[train_df["meter"] == 3]["meter"].
+        count() / train_df["meter"].count() * 100), 2)
+
+    series = pd.Series([percent_electricity, percent_chilled_water,
+        percent_steam, percent_hot_water], index=["Electricity",
+        "Chilled Water", "Steam", "Hot Water"])
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=150)
+
+    pd.DataFrame(series).T.plot.bar(stacked=True, ax=ax)
+    plt.style.use('ggplot')
+    ax.set_title(
+        "Percentage Meter Readings by\n Metered Energy Type (Train Data)",
+        fontsize=18, color="black")
+    ax.set_ylabel("Percent", fontsize=14, color="black")
+    ax.xaxis.label.set_color('black')
+    ax.tick_params(axis='y', colors='black')
+    plt.xticks(visible=False)
+    plt.savefig("../images/meter_type_distribution.png", bbox_inches='tight')
 
 
 def drop_unimportant_columns(df, drop_list):
@@ -238,10 +281,13 @@ def feature_importance_bar_graph(meter_type, feature_importances, df):
             inplace=True)
     top_5_feature_importances = feature_importances[sorted_feature_indices][:5]
 
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=150)
-    ax.set_title(f"{meter_type} Feature Importances")
-    ax.set_xlabel("Features")
-    ax.set_ylabel("Importance")
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=200)
+    ax.set_title(f"{meter_type} Feature Importances", fontsize=18,
+        color="black")
+    ax.set_xlabel("Features", fontsize=14, color="black")
+    ax.set_ylabel("Importance", fontsize=14, color="black")
+    ax.tick_params(axis='y', colors='black')
+    ax.tick_params(axis='x', colors='black')
     ax.bar(top_5_feature_names, top_5_feature_importances)
     fig.tight_layout(pad=1)
     plt.savefig(f"../images/{meter_type}_feature_importance_bar_graph.png")
@@ -249,16 +295,16 @@ def feature_importance_bar_graph(meter_type, feature_importances, df):
 
 if __name__ == "__main__":
     # Full cleaned training set
-    # cleaned_df = pd.read_csv("../data/cleaned_df.csv")
-    # cleaned_df.drop("Unnamed: 0", axis=1, inplace=True)
+    cleaned_df = pd.read_csv("../data/cleaned_df.csv")
+    cleaned_df.drop("Unnamed: 0", axis=1, inplace=True)
 
     # Data for EDA plotting
-    # metadata_df = pd.read_csv("../data/ \
-    #     ashrae-energy-prediction/building_metadata.csv")
+    metadata_df = pd.read_csv("../data/\
+        ashrae-energy-prediction/building_metadata.csv")
     plt.style.use("ggplot")
-    # labels = ["Education", "Office", "Entertainment/ \n public assembly",
-    #     "Public services", "Lodging/ \n residential", "Other"]
-    # primary_use_bar_graph(metadata_df, labels)
+    labels = ["Education", "Office", "Entertainment/ \n public assembly",
+        "Public services", "Lodging/ \n residential", "Other"]
+    primary_use_bar_graph(metadata_df, labels)
 
     # Cleaned training data for each meter type
     hotwater_subset = pd.read_csv("../data/hotwater_subset.csv",
@@ -270,30 +316,32 @@ if __name__ == "__main__":
     steam_subset = pd.read_csv("../data/steam_subset.csv",
         index_col="Unnamed: 0")
 
-    # Hotwater data to model
-    hotwater_drop_list = ["Unnamed: 0.1", "row_id", "electricity",
-        "chilledwater", "steam", "hotwater", "Manufacturing/industrial",
-        "Other", "Parking", "Retail", "Services", "Utility",
-        "Warehouse/storage"]
-    hotwater_df = drop_unimportant_columns(hotwater_subset,
-        hotwater_drop_list)
-    hotwater_df = target_log_transformation(hotwater_df)
+    # Water meter type data to model
+    water_combined = pd.concat([hotwater_subset, chilledwater_subset,
+        steam_subset])
+    water_combined_drop_list = ["Unnamed: 0.1", "row_id"]
+    water_combined = drop_unimportant_columns(water_combined,
+        water_combined_drop_list)
+    water_combined.rename(columns={"q1": "1st_Quarter", "q2": "2nd_Quarter",
+        "q3": "3rd_Quarter", "q4": "4th_Quarter"}, inplace=True)
+    water_combined = target_log_transformation(water_combined)
 
-    # Modeling hotwater data
-    hotwater_rf = RandomForestRegressor(n_estimators=100,
+    # Modeling water meter type data
+    water_combined_rf = RandomForestRegressor(n_estimators=100,
         n_jobs=-1)
-    hotwater_score, hotwater_y_pred, hotwater_y_test, \
-        hotwater_feature_importances = mulitmodels(hotwater_rf, hotwater_df)
-    hotwater_rmse_score = rmse(hotwater_y_pred, hotwater_y_test)
+    water_combined_score, water_combined_y_pred, water_combined_y_test, \
+        water_combined_feature_importances = mulitmodels(water_combined_rf,
+        water_combined)
 
-    print(feature_importance_bar_graph("Hot Water",
-        hotwater_feature_importances, hotwater_df))
-    # print(f"Hotwater RMSE: {round(hotwater_rmse_score, 3)}")
+    print(feature_importance_bar_graph("Water",
+        water_combined_feature_importances, water_combined))
 
     # electricity data to model
     electricity_drop_list = ["Unnamed: 0.1", "row_id"]
     electricity_df = drop_unimportant_columns(electricity_subset,
         electricity_drop_list)
+    electricity_df.rename(columns={"q1": "1st_Quarter", "q2": "2nd_Quarter",
+        "q3": "3rd_Quarter", "q4": "4th_Quarter"}, inplace=True)
     electricity_df = target_log_transformation(electricity_df)
 
     # Modeling electricity data
@@ -301,49 +349,15 @@ if __name__ == "__main__":
     electricity_score, electricity_y_pred, electricity_y_test, \
         electricity_feature_importances \
         = mulitmodels(electricity_rf, electricity_df)
-    electricity_rmse_score = rmse(electricity_y_pred, electricity_y_test)
 
     print(feature_importance_bar_graph("Electricity",
         electricity_feature_importances, electricity_df))
-    # print(f"Electricity RMSE: {round(electricity_rmse_score, 3)}")
-
-    # chilledwater data to model
-    chilledwater_drop_list = ["Unnamed: 0.1", "row_id"]
-    chilledwater_df = drop_unimportant_columns(chilledwater_subset,
-        chilledwater_drop_list)
-    chilledwater_df = target_log_transformation(chilledwater_df)
-
-    # Modeling chilledwater data
-    chilledwater_rf = RandomForestRegressor(n_estimators=100, n_jobs=-1)
-    chilledwater_score, chilledwater_y_pred, chilledwater_y_test, \
-        chilledwater_feature_importances \
-        = mulitmodels(chilledwater_rf, chilledwater_df)
-    chilledwater_rmse_score = rmse(chilledwater_y_pred, chilledwater_y_test)
-
-    print(feature_importance_bar_graph("Chilled Water",
-        chilledwater_feature_importances, chilledwater_df))
-    # print(f"Chilledwater RMSE: {round(chilledwater_rmse_score, 3)}")
-
-    # steam data to model
-    steam_drop_list = ["Unnamed: 0.1", "row_id"]
-    steam_df = drop_unimportant_columns(steam_subset, steam_drop_list)
-    steam_df = target_log_transformation(steam_df)
-
-    # Modeling steam data
-    steam_rf = RandomForestRegressor(n_estimators=100, n_jobs=-1)
-    steam_score, steam_y_pred, steam_y_test, \
-        steam_feature_importances = mulitmodels(steam_rf, steam_df)
-    steam_rmse_score = rmse(steam_y_pred, steam_y_test)
-
-    print(feature_importance_bar_graph("Steam", steam_feature_importances,
-        steam_df))
-    # print(f"Steam RMSE: {round(steam_rmse_score, 3)}")
 
     # Combining subset predictions
-    combined_y_pred = pd.Series(np.concatenate((hotwater_y_pred,
-        electricity_y_pred, chilledwater_y_pred, steam_y_pred), axis=0))
-    combined_y_test = pd.concat([hotwater_y_test, electricity_y_test,
-        chilledwater_y_test, steam_y_test], axis=0)
+    combined_y_pred = pd.Series(np.concatenate((water_combined_y_pred,
+        electricity_y_pred), axis=0))
+    combined_y_test = pd.concat([water_combined_y_test,
+        electricity_y_test], axis=0)
     combined_y_pred = reverse_log_transformation(combined_y_pred)
     combined_y_test = reverse_log_transformation(combined_y_test)
     combined_rmsle = rmsle(combined_y_pred, combined_y_test)

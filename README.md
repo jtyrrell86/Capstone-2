@@ -1,4 +1,4 @@
-# Can We Accurately Predict Energy Usage?
+# Can We Accurately Model Building Energy Usage?
 <div align="center">
         <img src="images/meter-1240897.jpg" width="" height="">
     </div>
@@ -91,7 +91,7 @@ As one final step I ran my target column, meter_reading, through a logarithmic t
 From that final model the below graph is of the feature importance’s of the top 5 features.
 
 <div align="center">
-        <img src="images/Hotwater_feature_importance_bar_graph.png" width="" height="">
+        <img src="images/Hot Water_feature_importance_bar_graph.png" width="" height="">
     </div>
 <br>
 
@@ -109,4 +109,8 @@ From my inital modeling it appears I should be able to predict savings, but I wo
 * Run a model on the entire test data set and submit predictions to Kaggle for scoring
 
 ## Sources
+* Data - https://www.kaggle.com/c/ashrae-energy-prediction/leaderboard
+* Energy stats - https://www.eia.gov/
+* Biden admins climate goals - https://www.nytimes.com/live/2021/04/22/us/biden-earth-day-climate-summit
+
 
