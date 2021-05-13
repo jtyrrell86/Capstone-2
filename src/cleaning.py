@@ -67,18 +67,18 @@ def create_quarterly_dummies_for_year(df):
     '''
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     df["date"] = df["timestamp"].dt.date
-    q1 = (df["date"] >= pd.to_datetime("2016-01-01").date()) & \
-         (df["date"] < pd.to_datetime("2016-04-01").date())
-    q2 = (df["date"] >= pd.to_datetime("2016-04-01").date()) & \
-         (df["date"] < pd.to_datetime("2016-07-01").date())
-    q3 = (df["date"] >= pd.to_datetime("2016-07-01").date()) & \
-         (df["date"] < pd.to_datetime("2016-10-01").date())
-    q4 = (df["date"] >= pd.to_datetime("2016-10-01").date()) & \
-         (df["date"] <= pd.to_datetime("2016-12-31").date())
-    df["date"][q1] = "q1"
-    df["date"][q2] = "q2"
-    df["date"][q3] = "q3"
-    df["date"][q4] = "q4"
+    _1st_Quarter = (df["date"] >= pd.to_datetime("2016-01-01").date()) & \
+                   (df["date"] < pd.to_datetime("2016-04-01").date())
+    _2nd_Quarter = (df["date"] >= pd.to_datetime("2016-04-01").date()) & \
+                   (df["date"] < pd.to_datetime("2016-07-01").date())
+    _3rd_Quarter = (df["date"] >= pd.to_datetime("2016-07-01").date()) & \
+                   (df["date"] < pd.to_datetime("2016-10-01").date())
+    _4th_Quarter = (df["date"] >= pd.to_datetime("2016-10-01").date()) & \
+                   (df["date"] <= pd.to_datetime("2016-12-31").date())
+    df.loc[_1st_Quarter, "date"] = "1st_Quarter"
+    df.loc[_2nd_Quarter, "date"] = "2nd_Quarter"
+    df.loc[_3rd_Quarter, "date"] = "3rd_Quarter"
+    df.loc[_4th_Quarter, "date"] = "4th_Quarter"
     date_dummies = pd.get_dummies(df["date"])
     df = df.join(other=date_dummies)
     df.drop(["date"], axis=1, inplace=True)
@@ -116,10 +116,15 @@ def create_quarterly_dummies_for_a_day(df):
                 (df["time"] < pd.to_datetime("18:00:00").time())
     evening = (df["time"] >= pd.to_datetime("18:00:00").time()) & \
               (df["time"] <= pd.to_datetime("23:59:00").time())
-    df["time"][early_morning] = "early_morning"
+    df.loc[early_morning, "time"] = "early_morning"
+    df.loc[morning, "time"] = "morning"
+    df.loc[afternoon, "time"] = "afternoon"
+    df.loc[evening, "time"] = "evening"
+
+    '''df["time"][early_morning] = "early_morning"
     df["time"][morning] = "morning"
     df["time"][afternoon] = "afternoon"
-    df["time"][evening] = "evening"
+    df["time"][evening] = "evening"'''
     time_dummies = pd.get_dummies(df["time"])
     df = df.join(other=time_dummies)
     df.drop(["time"], axis=1, inplace=True)
@@ -144,7 +149,7 @@ def create_primary_usage_and_meter_dummies(df):
     meter_dummies = pd.get_dummies(df["meter"])
     df = df.join(other=meter_dummies)
     df = df.rename(columns={0: "electricity", 1: "chilledwater", 2: "steam",
-        3: "hotwater"})
+                   3: "hotwater"})
     df.drop(["meter"], axis=1, inplace=True)
 
     usage_dummies = pd.get_dummies(df["primary_use"])
@@ -199,11 +204,12 @@ def create_temp_mean_df(weather_df):
     '''
     weather_df_copy = weather_df.copy()
     weather_df_copy["timestamp"] = pd.to_datetime(weather_train_df
-        ["timestamp"])
+                                                  ["timestamp"])
     weather_df_copy["date"] = weather_df_copy["timestamp"].dt.date
     weather_df_copy.drop(["cloud_coverage", "dew_temperature",
-        "precip_depth_1_hr", "sea_level_pressure", "wind_direction",
-        "wind_speed", "timestamp"], axis=1, inplace=True)
+                          "precip_depth_1_hr", "sea_level_pressure",
+                          "wind_direction", "wind_speed", "timestamp"], axis=1,
+                         inplace=True)
     temp_mean_df = weather_df_copy.groupby(by=["site_id", "date"]).mean()
     return temp_mean_df
 
@@ -232,8 +238,10 @@ def impute_temp_nans(df, temp_mean_df):
             year = df.iloc[idx, 3].year
             month = df.iloc[idx, 3].month
             day = df.iloc[idx, 3].day
-            df.iloc[idx, 5] = temp_mean_df.loc[(df.iloc[idx, 0], datetime.date
-                (year, month, day))]["air_temperature"]
+            df.iloc[idx, 5] = temp_mean_df.loc[(df.iloc[idx, 0],
+                                                datetime.date(year,
+                                                month, day))]
+            ["air_temperature"]
         if idx % 100000 == 0:
             checkpoint = time.time()
             print(f'{idx} 100,000 time:{checkpoint-start}')
@@ -270,21 +278,23 @@ def meter_type_subset(df, meter_type):
 
 if __name__ == "__main__":
     metadata_df = pd.read_csv(
-        "../data/ashrae-energy-prediction/building_metadata.csv")
+        "data/ashrae-energy-prediction/building_metadata.csv")
     weather_train_df = pd.read_csv(
-        "../data/ashrae-energy-prediction/weather_train.csv")
-    train_df = pd.read_csv("../data/ashrae-energy-prediction/train.csv")
+        "data/ashrae-energy-prediction/weather_train.csv")
+    train_df = pd.read_csv("data/ashrae-energy-prediction/train.csv")
 
     weather_test_df = pd.read_csv(
-        "../data/ashrae-energy-prediction/weather_test.csv")
-    test_df = pd.read_csv("../data/ashrae-energy-prediction/test.csv")
+        "data/ashrae-energy-prediction/weather_test.csv")
+    test_df = pd.read_csv("data/ashrae-energy-prediction/test.csv")
 
     # Cleaning the training data
     combined_df = merge_dataframes(metadata_df, train_df, weather_train_df)
     lst_of_cols_to_drop_1 = ["cloud_coverage", "dew_temperature",
-        "precip_depth_1_hr" , "sea_level_pressure", "wind_direction",
-        "wind_speed", "year_built", "floor_count"]
-    combined_df = drop_initial_unused_cols(combined_df, lst_of_cols_to_drop_1)
+                             "precip_depth_1_hr", "sea_level_pressure",
+                             "wind_direction", "wind_speed", "year_built",
+                             "floor_count"]
+    combined_df = drop_initial_unused_cols(combined_df,
+                                           lst_of_cols_to_drop_1)
     combined_df = create_quarterly_dummies_for_year(combined_df)
     combined_df = create_quarterly_dummies_for_a_day(combined_df)
     combined_df = create_primary_usage_and_meter_dummies(combined_df)
@@ -293,9 +303,9 @@ if __name__ == "__main__":
     temp_mean_df = create_temp_mean_df(weather_train_df)
     combined_df = impute_temp_nans(combined_df, temp_mean_df)
     list_of_cols_to_drop_2 = ["timestamp", "site_id", "building_id"]
-    cleaned_df = create_ref_col_and_drop_remaining_unused(combined_df,
-        list_of_cols_to_drop_2)
-    cleaned_df.to_csv("../data/cleaned_df.csv")
+    cleaned_df = create_ref_col_and_drop_remaining_unused(
+        combined_df, list_of_cols_to_drop_2)
+    cleaned_df.to_csv("data/cleaned_df.csv")
 
     # Splitting the data into meter type for individual modeling
     electricity_subset = meter_type_subset(cleaned_df, "electricity")
@@ -312,12 +322,13 @@ if __name__ == "__main__":
 
     # Cleaning the test data
     combined_test_df = merge_dataframes(metadata_df, test_df,
-        weather_test_df)
+                                        weather_test_df)
     lst_of_cols_to_drop_1 = ["cloud_coverage", "dew_temperature",
-        "precip_depth_1_hr", "sea_level_pressure", "wind_direction",
-        "wind_speed", "year_built", "floor_count"]
+                             "precip_depth_1_hr", "sea_level_pressure",
+                             "wind_direction", "wind_speed", "year_built",
+                             "floor_count"]
     combined_test_df = drop_initial_unused_cols(combined_test_df,
-        lst_of_cols_to_drop_1)
+                                                lst_of_cols_to_drop_1)
     combined_test_df = create_quarterly_dummies_for_year(combined_test_df)
     combined_test_df = create_quarterly_dummies_for_a_day(combined_test_df)
     combined_test_df = create_primary_usage_and_meter_dummies(combined_test_df)
@@ -334,7 +345,7 @@ if __name__ == "__main__":
     electricity_test_subset.to_csv("../data/electricity_test_subset.csv")
 
     chilledwater_test_subset = meter_type_subset(cleaned_test_df,
-        "chilledwater")
+                                                 "chilledwater")
     chilledwater_test_subset.to_csv("../data/chilledwater_test_subset.csv")
 
     steam_test_subset = meter_type_subset(cleaned_test_df, "steam")

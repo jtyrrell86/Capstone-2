@@ -35,7 +35,7 @@ def primary_use_bar_graph(metadata, labels):
     ax.tick_params(axis='x', colors='black')
     ax.bar(labels, primary_use.values)
     fig.tight_layout(pad=1)
-    plt.savefig(f"../images/primary_use_bar_graph.png")
+    plt.savefig("../images/primary_use_bar_graph.png")
 
 
 def percentage_meter_readings_by_energy__type_plot(train_df):
@@ -54,17 +54,19 @@ def percentage_meter_readings_by_energy__type_plot(train_df):
     '''
 
     percent_electricity = round((train_df[train_df["meter"] == 0]["meter"].
-        count() / train_df["meter"].count() * 100), 2)
+                                 count() / train_df["meter"].count() * 100), 2)
     percent_chilled_water = round((train_df[train_df["meter"] == 1]["meter"].
-        count() / train_df["meter"].count() * 100), 2)
+                                   count() / train_df["meter"].count() * 100),
+                                  2)
     percent_steam = round((train_df[train_df["meter"] == 2]["meter"].
-        count() / train_df["meter"].count() * 100), 2)
+                           count() / train_df["meter"].count() * 100), 2)
     percent_hot_water = round((train_df[train_df["meter"] == 3]["meter"].
-        count() / train_df["meter"].count() * 100), 2)
+                               count() / train_df["meter"].count() * 100), 2)
 
     series = pd.Series([percent_electricity, percent_chilled_water,
-        percent_steam, percent_hot_water], index=["Electricity",
-        "Chilled Water", "Steam", "Hot Water"])
+                        percent_steam, percent_hot_water],
+                       index=["Electricity", "Chilled Water", "Steam",
+                              "Hot Water"])
     fig, ax = plt.subplots(figsize=(8, 6), dpi=150)
 
     pd.DataFrame(series).T.plot.bar(stacked=True, ax=ax)
@@ -107,7 +109,7 @@ def mulitmodels(model, df):
     the data. It then does a train, test, split and fits the model on the train
     data. Lastly, predicts on the test data and returns an r^2 score,
     y_predictions, y_test, and feature importances. The later three can be used
-    in future calculations or plotting.
+    in future calculations or plotting
 
     Parameters
     ----------
@@ -140,7 +142,7 @@ def mulitmodels_for_kaggle(model, df, X_test):
     ''' Allows the user to pass in an instance of any model type, the train
     dataframe, and the test dataframe. It then trains the model using the
     full train dataframe and predicts on the test dataframe. Lastly, it returns
-    y_predictions that can be uploaded to kaggle.
+    y_predictions that can be uploaded to kaggle
 
     Parameters
     ----------
@@ -213,8 +215,7 @@ def rmse(y_pred, y_test):
 
 def target_log_transformation(df):
     '''Takes in a dataframe that includes the target column, meter reading,
-    and log transforms the values if the default log=True is left untouched.
-    If it's changed to false it will reverse the log transformation.
+    and log transforms the values in thata column
 
     Parameters
     ----------
@@ -232,6 +233,21 @@ def target_log_transformation(df):
 
 
 def reverse_log_transformation(sr):
+    '''Takes in a target values, as a series, and reverses their log
+    transformation in order for RMSLE to be used to compare predictions
+    to actual
+
+    Parameters
+    ----------
+    sr : Pandas series
+        Series containing just target values
+
+    Returns
+    -------
+    Pandas series
+        Series with target values that have had their log transformaiton
+        reversed
+    '''
     sr[sr >= 0] = sr[sr >= 0].apply(lambda x: np.expm1(x))
     return sr
 
@@ -278,12 +294,12 @@ def feature_importance_bar_graph(meter_type, feature_importances, df):
     top_5_feature_names = feature_names[sorted_feature_indices][:5]
     for feature in top_5_feature_names:
         top_5_feature_names.replace(feature, feature.replace("_", " "),
-            inplace=True)
+                                    inplace=True)
     top_5_feature_importances = feature_importances[sorted_feature_indices][:5]
 
     fig, ax = plt.subplots(figsize=(8, 6), dpi=200)
     ax.set_title(f"{meter_type} Feature Importances", fontsize=18,
-        color="black")
+                 color="black")
     ax.set_xlabel("Features", fontsize=14, color="black")
     ax.set_ylabel("Importance", fontsize=14, color="black")
     ax.tick_params(axis='y', colors='black')
@@ -303,45 +319,48 @@ if __name__ == "__main__":
         ashrae-energy-prediction/building_metadata.csv")
     plt.style.use("ggplot")
     labels = ["Education", "Office", "Entertainment/ \n public assembly",
-        "Public services", "Lodging/ \n residential", "Other"]
+              "Public services", "Lodging/ \n residential", "Other"]
     primary_use_bar_graph(metadata_df, labels)
 
     # Cleaned training data for each meter type
     hotwater_subset = pd.read_csv("../data/hotwater_subset.csv",
-        index_col="Unnamed: 0")
+                                  index_col="Unnamed: 0")
     electricity_subset = pd.read_csv("../data/electricity_subset.csv",
-        index_col="Unnamed: 0")
+                                     index_col="Unnamed: 0")
     chilledwater_subset = pd.read_csv("../data/chilledwater_subset.csv",
-        index_col="Unnamed: 0")
+                                      index_col="Unnamed: 0")
     steam_subset = pd.read_csv("../data/steam_subset.csv",
-        index_col="Unnamed: 0")
+                               index_col="Unnamed: 0")
 
     # Water meter type data to model
     water_combined = pd.concat([hotwater_subset, chilledwater_subset,
-        steam_subset])
+                                steam_subset])
     water_combined_drop_list = ["Unnamed: 0.1", "row_id"]
     water_combined = drop_unimportant_columns(water_combined,
-        water_combined_drop_list)
+                                              water_combined_drop_list)
     water_combined.rename(columns={"q1": "1st_Quarter", "q2": "2nd_Quarter",
-        "q3": "3rd_Quarter", "q4": "4th_Quarter"}, inplace=True)
+                                   "q3": "3rd_Quarter", "q4": "4th_Quarter"},
+                          inplace=True)
     water_combined = target_log_transformation(water_combined)
 
     # Modeling water meter type data
     water_combined_rf = RandomForestRegressor(n_estimators=100,
-        n_jobs=-1)
+                                              n_jobs=-1)
     water_combined_score, water_combined_y_pred, water_combined_y_test, \
         water_combined_feature_importances = mulitmodels(water_combined_rf,
-        water_combined)
+                                                         water_combined)
 
     print(feature_importance_bar_graph("Water",
-        water_combined_feature_importances, water_combined))
+                                       water_combined_feature_importances,
+                                       water_combined))
 
     # electricity data to model
     electricity_drop_list = ["Unnamed: 0.1", "row_id"]
     electricity_df = drop_unimportant_columns(electricity_subset,
-        electricity_drop_list)
+                                              electricity_drop_list)
     electricity_df.rename(columns={"q1": "1st_Quarter", "q2": "2nd_Quarter",
-        "q3": "3rd_Quarter", "q4": "4th_Quarter"}, inplace=True)
+                                   "q3": "3rd_Quarter", "q4": "4th_Quarter"},
+                          inplace=True)
     electricity_df = target_log_transformation(electricity_df)
 
     # Modeling electricity data
@@ -351,13 +370,14 @@ if __name__ == "__main__":
         = mulitmodels(electricity_rf, electricity_df)
 
     print(feature_importance_bar_graph("Electricity",
-        electricity_feature_importances, electricity_df))
+                                       electricity_feature_importances,
+                                       electricity_df))
 
     # Combining subset predictions
     combined_y_pred = pd.Series(np.concatenate((water_combined_y_pred,
-        electricity_y_pred), axis=0))
+                                                electricity_y_pred), axis=0))
     combined_y_test = pd.concat([water_combined_y_test,
-        electricity_y_test], axis=0)
+                                 electricity_y_test], axis=0)
     combined_y_pred = reverse_log_transformation(combined_y_pred)
     combined_y_test = reverse_log_transformation(combined_y_test)
     combined_rmsle = rmsle(combined_y_pred, combined_y_test)

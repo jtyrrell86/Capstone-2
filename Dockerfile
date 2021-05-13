@@ -15,5 +15,7 @@ WORKDIR /Users/justintyrrell/Documents/Galvanize_DSI/Capstone-2
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY src/ src
-COPY data/ data
+COPY src/cleaning.py src/cleaning.py
+COPY data/ashrae-energy-prediction/building_metadata.csv data/building_metadata.csv
+COPY data/ashrae-energy-prediction/train.csv data/train.csv
+COPY data/ashrae-energy-prediction/weather_train.csv data/weather_train.csv
