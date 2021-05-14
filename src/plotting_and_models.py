@@ -311,8 +311,7 @@ def feature_importance_bar_graph(meter_type, feature_importances, df):
 
 if __name__ == "__main__":
     # Full cleaned training set
-    cleaned_df = pd.read_csv("../data/cleaned_df.csv")
-    cleaned_df.drop("Unnamed: 0", axis=1, inplace=True)
+    cleaned_df = pd.read_csv("../data/cleaned_df.csv", index_col="Unnamed: 0")
 
     # Data for EDA plotting
     metadata_df = pd.read_csv("../data/\
@@ -335,12 +334,9 @@ if __name__ == "__main__":
     # Water meter type data to model
     water_combined = pd.concat([hotwater_subset, chilledwater_subset,
                                 steam_subset])
-    water_combined_drop_list = ["Unnamed: 0.1", "row_id"]
+    water_combined_drop_list = ["row_id"]
     water_combined = drop_unimportant_columns(water_combined,
                                               water_combined_drop_list)
-    water_combined.rename(columns={"q1": "1st_Quarter", "q2": "2nd_Quarter",
-                                   "q3": "3rd_Quarter", "q4": "4th_Quarter"},
-                          inplace=True)
     water_combined = target_log_transformation(water_combined)
 
     # Modeling water meter type data
@@ -355,12 +351,9 @@ if __name__ == "__main__":
                                        water_combined))
 
     # electricity data to model
-    electricity_drop_list = ["Unnamed: 0.1", "row_id"]
+    electricity_drop_list = ["row_id"]
     electricity_df = drop_unimportant_columns(electricity_subset,
                                               electricity_drop_list)
-    electricity_df.rename(columns={"q1": "1st_Quarter", "q2": "2nd_Quarter",
-                                   "q3": "3rd_Quarter", "q4": "4th_Quarter"},
-                          inplace=True)
     electricity_df = target_log_transformation(electricity_df)
 
     # Modeling electricity data

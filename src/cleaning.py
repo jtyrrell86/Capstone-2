@@ -307,18 +307,20 @@ if __name__ == "__main__":
         combined_df, list_of_cols_to_drop_2)
     cleaned_df.to_csv("data/cleaned_df.csv")
 
-    # Splitting the data into meter type for individual modeling
+    cleaned_df = pd.read_csv("data/cleaned_df.csv", index_col="Unnamed: 0")
+
+    # Splitting the data into meter type for initial individual modeling
     electricity_subset = meter_type_subset(cleaned_df, "electricity")
-    electricity_subset.to_csv("../data/electricity_subset.csv")
+    electricity_subset.to_csv("data/electricity_subset.csv")
 
     chilledwater_subset = meter_type_subset(cleaned_df, "chilledwater")
-    chilledwater_subset.to_csv("../data/chilledwater_subset.csv")
+    chilledwater_subset.to_csv("data/chilledwater_subset.csv")
 
     steam_subset = meter_type_subset(cleaned_df, "steam")
-    steam_subset.to_csv("../data/steam_subset.csv")
+    steam_subset.to_csv("data/steam_subset.csv")
 
     hotwater_subset = meter_type_subset(cleaned_df, "hotwater")
-    hotwater_subset.to_csv("../data/hotwater_subset.csv")
+    hotwater_subset.to_csv("data/hotwater_subset.csv")
 
     # Cleaning the test data
     combined_test_df = merge_dataframes(metadata_df, test_df,
@@ -340,7 +342,7 @@ if __name__ == "__main__":
         combined_test_df, list_of_cols_to_drop_2)
     cleaned_test_df.to_csv("../data/cleaned_test_df.csv")
 
-    # Splitting the test data into meter type for individual modeling
+    # Splitting the test data into meter type for initial individual modeling
     electricity_test_subset = meter_type_subset(cleaned_test_df, "electricity")
     electricity_test_subset.to_csv("../data/electricity_test_subset.csv")
 
