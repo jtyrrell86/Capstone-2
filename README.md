@@ -1,4 +1,4 @@
-# Can We Accurately Model Building Energy Usage? (Being Edited)
+# Can We Accurately Model Building Energy Usage?
 <div align="center">
         <img src="images/meter-1240897.jpg" width="" height="">
     </div>
